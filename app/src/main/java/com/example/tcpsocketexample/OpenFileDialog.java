@@ -24,14 +24,13 @@ public class OpenFileDialog {
 	static final public String EXTRA_STRING_NAME = "extra.string.name";
 	static final public String EXTRA_STRING_PATH = "extra.string.path";
 	static final public String EXTRA_STRING_IMG = "extra.string.img";
-	static final public String sRoot = "/";
+	static final public String sRoot = "/sdcard";
 	static final public String sParent = "..";
 	static final public String sFolder = ".";
 	static final public String sEmpty = "";
 	static final private String sOnErrorMsg = "No rights to access!";
-
 	//
-	// 参数说明
+	// 参考说明
 	//
 	// dialogid:对话框ID
 	// title:对话框标题
@@ -71,6 +70,7 @@ public class OpenFileDialog {
 			this.callback = callback;
 			this.dialogid = dialogid;
 			this.setOnItemClickListener(this);
+			this.setOnItemLongClickListener(onItemLongClickListener);
 			refreshFileList();
 		}
 		
@@ -211,5 +211,18 @@ public class OpenFileDialog {
 			}
 			this.refreshFileList();
 		}
+		private OnItemLongClickListener onItemLongClickListener = new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				String pt = (String) list.get(position).get(EXTRA_STRING_PATH);
+				File fl = new File(pt);
+				if(fl.isDirectory()){
+					path = pt;
+					refreshFileList();
+					return true;
+				}
+				return false;
+			}
+		};
 	}
 }

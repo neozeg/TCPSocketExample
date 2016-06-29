@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
 
