@@ -21,7 +21,9 @@ import java.util.Map;
 
 public class OpenFileDialog {
 	public static String TAG = "OpenFileDialog";
+	static final public String EXTRA_STRING_NAME = "extra.string.name";
 	static final public String EXTRA_STRING_PATH = "extra.string.path";
+	static final public String EXTRA_STRING_IMG = "extra.string.img";
 	static final public String sRoot = "/";
 	static final public String sParent = "..";
 	static final public String sFolder = ".";
@@ -29,18 +31,18 @@ public class OpenFileDialog {
 	static final private String sOnErrorMsg = "No rights to access!";
 
 	//
-	//r// 参数说明
-	//// context:上下文
-	//// dialogid:对话框ID
-	//// title:对话框标题
-	//// callback:一个传递Bundle参数的回调接口
-	//// suffix:需要选择的文件后缀，比如需要选择wav、mp3文件的时候设置为".wav;.mp3;"，注意最后需要一个分号(;)
-	//// images:用来根据后缀显示的图标资源ID。
-	////	根目录图标的索引为sRoot;
-	////	父目录的索引为sParent;
-	////	文件夹的索引为sFolder;
-	////	默认图标的索引为sEmpty;
-	////	其他的直接根据后缀进行索引，比如.wav文件图标的索引为"wav"
+	// 参数说明
+	//
+	// dialogid:对话框ID
+	// title:对话框标题
+	// callback:一个传递Bundle参数的回调接口
+	// suffix:需要选择的文件后缀，比如需要选择wav、mp3文件的时候设置为".wav;.mp3;"，注意最后需要一个分号(;)
+	// images:用来根据后缀显示的图标资源ID。
+	//	根目录图标的索引为sRoot;
+	//	父目录的索引为sParent;
+	//	文件夹的索引为sFolder;
+	//	默认图标的索引为sEmpty;
+	//	其他的直接根据后缀进行索引，比如.wav文件图标的索引为"wav"
 	public static Dialog createDialog(int id, Context context, String title, CallbackBundle callback, String suffix, Map<String, Integer> images){
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		builder.setView(new FileSelectView(context, id, callback, suffix, images));
@@ -126,15 +128,15 @@ public class OpenFileDialog {
 			if(!this.path.equals(sRoot)){
 				// 添加根目录 和 上一层目录
 				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("name", sRoot);
+				map.put(EXTRA_STRING_NAME, sRoot);
 				map.put(EXTRA_STRING_PATH, sRoot);
-				map.put("img", getImageId(sRoot));
+				map.put(EXTRA_STRING_IMG, getImageId(sRoot));
 				list.add(map);
 				
 				map = new HashMap<String, Object>();
-				map.put("name", sParent);
+				map.put(EXTRA_STRING_NAME, sParent);
 				map.put(EXTRA_STRING_PATH, path);
-				map.put("img", getImageId(sParent));
+				map.put(EXTRA_STRING_IMG, getImageId(sParent));
 				list.add(map);
 			}
 			
@@ -143,9 +145,9 @@ public class OpenFileDialog {
 				if(file.isDirectory() && file.listFiles()!=null){
 					// 添加文件夹
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("name", file.getName());
+					map.put(EXTRA_STRING_NAME, file.getName());
 					map.put(EXTRA_STRING_PATH, file.getPath());
-					map.put("img", getImageId(sFolder));
+					map.put(EXTRA_STRING_IMG, getImageId(sFolder));
 					lfolders.add(map);
 				}
 				else if(file.isFile()){
@@ -153,9 +155,9 @@ public class OpenFileDialog {
 					String sf = getSuffix(file.getName()).toLowerCase();
 					if(suffix == null || suffix.length()==0 || (sf.length()>0 && suffix.indexOf("."+sf+";")>=0)){
 						Map<String, Object> map = new HashMap<String, Object>();
-						map.put("name", file.getName());
+						map.put(EXTRA_STRING_NAME, file.getName());
 						map.put(EXTRA_STRING_PATH, file.getPath());
-						map.put("img", getImageId(sf));
+						map.put(EXTRA_STRING_IMG, getImageId(sf));
 						lfiles.add(map);
 					}
 				}  
@@ -165,7 +167,7 @@ public class OpenFileDialog {
 			list.addAll(lfiles);	//再添加文件
 			
 			
-			SimpleAdapter adapter = new SimpleAdapter(getContext(), list, R.layout.filedialogitem, new String[]{"img", "name", EXTRA_STRING_PATH}, new int[]{R.id.filedialogitem_img, R.id.filedialogitem_name, R.id.filedialogitem_path});
+			SimpleAdapter adapter = new SimpleAdapter(getContext(), list, R.layout.filedialogitem, new String[]{EXTRA_STRING_IMG, EXTRA_STRING_NAME, EXTRA_STRING_PATH}, new int[]{R.id.filedialogitem_img, R.id.filedialogitem_name, R.id.filedialogitem_path});
 			this.setAdapter(adapter);
 			return files.length;
 		}
@@ -173,7 +175,7 @@ public class OpenFileDialog {
 		public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 			// 条目选择
 			String pt = (String) list.get(position).get(EXTRA_STRING_PATH);
-			String fn = (String) list.get(position).get("name");
+			String fn = (String) list.get(position).get(EXTRA_STRING_NAME);
 			if(fn.equals(sRoot) || fn.equals(sParent)){
 				// 如果是更目录或者上一层
 				File fl = new File(pt);
@@ -196,7 +198,7 @@ public class OpenFileDialog {
 					// 设置回调的返回值
 					Bundle bundle = new Bundle();
 					bundle.putString(EXTRA_STRING_PATH, pt);
-					bundle.putString("name", fn);
+					bundle.putString(EXTRA_STRING_NAME, fn);
 					// 调用事先设置的回调函数
 					this.callback.callback(bundle);
 					return;

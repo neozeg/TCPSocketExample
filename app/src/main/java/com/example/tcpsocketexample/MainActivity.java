@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -176,14 +174,20 @@ public class MainActivity extends Activity {
         }
         return buffer;
     }
+
     private void sendBufferedData(String filepath){
-        final byte[] buffer = readFile(filepath);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mTCPService.sendData(mTCPService.getClient(0),buffer);
-            }
-        }).start();
+        final byte[] buffer;// = readFile(filepath);
+        try {
+            buffer = MyZipUtil.createZipBuffer(filepath);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mTCPService.sendData(mTCPService.getClient(0),buffer);
+                }
+            }).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -194,12 +198,12 @@ public class MainActivity extends Activity {
     protected Dialog onCreateDialog(int id) {
         if(id == OPEN_FILE_DIALOG_ID){
             Map<String,Integer> images = new HashMap<String, Integer>();
-            images.put(OpenFileDialog.sRoot,R.drawable.filedialog_root);
             images.put(OpenFileDialog.sParent,R.drawable.filedialog_folder_up);
+            images.put(OpenFileDialog.sRoot,R.drawable.filedialog_root);
             images.put(OpenFileDialog.sFolder,R.drawable.filedialog_folder);
             images.put("wav",R.drawable.filedialog_wavfile);
+            images.put(OpenFileDialog.sEmpty,R.drawable.filedialog_file);
             //images.put("bin",R.drawable.filedialog_file);
-            images.put(OpenFileDialog.sEmpty,R.drawable.filedialog_root);
             Dialog dialog = OpenFileDialog.createDialog(id,this,"Open File",new CallbackBundle(){
 
                         @Override
@@ -208,7 +212,7 @@ public class MainActivity extends Activity {
                             Log.v(TAG,"path= "+ filepath);
                             sendBufferedData(filepath);
                         }
-                    },".bin;",images
+                    },"",images
             );
             return dialog;
         }
